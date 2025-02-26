@@ -1,3 +1,4 @@
+#include <fontconfig/fontconfig.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <unistd.h>
@@ -56,18 +57,39 @@ std::string formatTime(double seconds) {
 
 // Helper function to search for a system default font.
 std::string getDefaultFontPath() {
-    std::vector<std::string> possiblePaths = {
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
-        "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
-        "/usr/share/fonts/truetype/freefont/FreeSans.ttf"
-    };
+  std::vector<std::string> validFonts = {"DejaVuSans", "LiberationSans",
+                                         "FreeSans"};
 
-    for (const auto &path : possiblePaths) {
-        if (access(path.c_str(), F_OK) == 0) {
-            return path;
-        }
+  FcConfig *conf = FcInitLoadConfigAndFonts();
+
+  for (const auto &fontName : validFonts) {
+    FcPattern *pat = FcNameParse((FcChar8 *)&fontName);
+
+    FcConfigSubstitute(conf, pat, FcMatchPattern);
+    FcDefaultSubstitute(pat);
+
+    FcResult result;
+    FcFontSet *font_patterns = FcFontSort(conf, pat, FcTrue, 0, &result);
+
+    if (!font_patterns || font_patterns->nfont == 0) {
+      fprintf(stderr, "Fontconfig could not find ANY fonts on the system?\n");
+      break;
     }
-    return "";
+
+    FcPattern *font_pattern = FcFontRenderPrepare(conf, pat, font_patterns->fonts[0]);
+
+    FcChar8 *value;
+    FcResult pattern_as_string =
+        FcPatternGetString(font_pattern, FC_FILE, 0, &value);
+
+    FcFontSetSortDestroy(font_patterns);
+    FcPatternDestroy(pat);
+
+    if (pattern_as_string != FcResultMatch)
+      continue;
+    return reinterpret_cast<const char *>(value);
+  }
+  return "";
 }
 
 // Global variables for overlay sizing and margins.
@@ -115,7 +137,7 @@ void renderTimer(SDL_Renderer* renderer, TTF_Font* font, double timeValue) {
 }
 
 
-int main(int argc, char* argv[]) {
+int main(void) {
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         std::cerr << "SDL_Init Error: " << SDL_GetError() << "\n";
         return 1;
