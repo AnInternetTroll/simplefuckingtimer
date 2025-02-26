@@ -30,7 +30,7 @@ A minimal overlay timer for speedrunning with global hotkeys on Linux.
 Install necessary packages:
 ~~~bash
 sudo apt update
-sudo apt install build-essential libsdl2-dev libsdl2-ttf-dev libx11-dev
+sudo apt install build-essential pkg-config libsdl2-dev libsdl2-ttf-dev libx11-dev libfontconfig-dev
 ~~~
 
 Build then install:

@@ -1,34 +1,30 @@
-CXX = g++
-CXXFLAGS = -std=c++11 -O2 -Iinclude
-LIBS = -lSDL2 -lSDL2_ttf -lX11 -pthread
+override PREFIX ?= /usr/local
 
-SRC = src/main.cpp src/timer.cpp src/hotkeys.cpp
-OBJ = $(SRC:.cpp=.o)
+override CXX ?= g++
+
+override CXXFLAGS ?= -O2 -Wall -Wextra -Werror
+override CXXFLAGS += -std=c++11 -Iinclude
+
+LD_FLAGS := $(shell pkg-config --libs-only-L sdl2 SDL2_ttf x11 fontconfig)
+LD_LIBS := $(shell pkg-config --libs-only-l sdl2 SDL2_ttf x11 fontconfig) -lstdc++ -pthread
+
+SRC := src/main.cpp src/timer.cpp src/hotkeys.cpp
+OBJ := $(SRC:.cpp=.o)
 
 all: simplefuckingtimer
 
 simplefuckingtimer: $(OBJ)
-	$(CXX) $(CXXFLAGS) -o $@ $(OBJ) $(LIBS)
-
-src/%.o: src/%.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(LD_FLAGS) -o $@ $(OBJ) $(LD_LIBS)
 
 clean:
 	rm -f $(OBJ) simplefuckingtimer
 
 install: simplefuckingtimer
-	@echo "Installing simplefuckingtimer to /usr/local/bin..."
-	install -Dm755 simplefuckingtimer /usr/local/bin/simplefuckingtimer
-	@echo "Installing icon to /usr/share/pixmaps..."
-	install -Dm644 assets/sft-logo-256.png /usr/share/pixmaps/sft-logo-256.png
-	@echo "Installing desktop file to /usr/share/applications..."
-	install -Dm644 simplefuckingtimer.desktop /usr/share/applications/simplefuckingtimer.desktop
+	install -Dm755 simplefuckingtimer $(DESTDIR)$(PREFIX)/bin/simplefuckingtimer
+	install -Dm644 assets/sft-logo-256.png $(DESTDIR)$(PREFIX)/share/pixmaps/sft-logo-256.png
+	install -Dm644 simplefuckingtimer.desktop $(DESTDIR)$(PREFIX)/share/applications/simplefuckingtimer.desktop
 
 uninstall:
-	@echo "Removing simplefuckingtimer from /usr/local/bin..."
-	rm -f /usr/local/bin/simplefuckingtimer
-	@echo "Removing icon from /usr/share/pixmaps..."
-	rm -f /usr/share/pixmaps/sft-logo-256.png
-	@echo "Removing desktop file from /usr/share/applications..."
-	rm -f /usr/share/applications/simplefuckingtimer.desktop
-
+	rm -f $(DESTDIR)$(PREFIX)/bin/simplefuckingtimer
+	rm -f $(DESTDIR)$(PREFIX)/share/pixmaps/sft-logo-256.png
+	rm -f $(DESTDIR)$(PREFIX)/share/applications/simplefuckingtimer.desktop
