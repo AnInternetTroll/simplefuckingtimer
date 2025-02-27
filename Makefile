@@ -8,7 +8,7 @@ override CXXFLAGS ?= -O2 -Wall -Wextra -Werror
 override CXXFLAGS += -std=c++11 -Iinclude $(shell pkg-config --cflags $(LIBS))
 
 LD_FLAGS := $(shell pkg-config --libs-only-L $(LIBS))
-LD_LIBS := $(shell pkg-config --libs-only-l sdl2 SDL2_ttf x11 fontconfig) -lstdc++ -pthread
+LD_LIBS := $(shell pkg-config --libs-only-l $(LIBS)) -lstdc++ -pthread
 
 SRC := src/main.cpp src/timer.cpp src/hotkeys.cpp
 OBJ := $(SRC:.cpp=.o)
