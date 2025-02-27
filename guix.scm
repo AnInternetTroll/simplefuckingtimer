@@ -15,7 +15,7 @@
   (name "simplefuckingtimer")
   (version "0")
   (source
-   (local-file (getcwd)
+   (local-file (dirname (current-filename))
                #:recursive? #t))
   (build-system gnu-build-system)
   (arguments
