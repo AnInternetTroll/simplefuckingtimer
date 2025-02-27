@@ -1,4 +1,5 @@
 (use-modules (guix git)
+             (guix gexp)
              (guix packages)
              (guix licenses)
              (guix build-system gnu)
@@ -14,11 +15,15 @@
   (name "simplefuckingtimer")
   (version "0")
   (source
-   (git-checkout (url (dirname (current-filename)))))
+   (local-file (getcwd)
+               #:recursive? #t))
   (build-system gnu-build-system)
   (arguments
    '(#:phases (modify-phases %standard-phases
-                (delete 'configure))))
+                (delete 'configure)
+                (delete 'check))
+     #:make-flags (list (string-append "PREFIX="
+                                       (assoc-ref %outputs "out")))))
   (native-inputs (list pkg-config))
   (inputs (list sdl2 sdl2-ttf fontconfig libx11))
   (synopsis
